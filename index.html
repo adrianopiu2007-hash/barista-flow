@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#121212">
+    <title>Barista Flow Ultimate</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#D4A373">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212; --surface: #1E1E1E; --primary: #D4A373; --accent: #E9C46A;
+            --text-main: #FAFAFA; --text-sec: #A0A0A0; --danger: #E76F51; --success: #2A9D8F;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif; background-color: var(--bg-dark); color: var(--text-main);
+            margin: 0; height: 100vh; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; overflow: hidden;
+        }
+        .app-container {
+            width: 100%; max-width: 420px; height: 100%; display: flex; flex-direction: column;
+            padding: 20px; box-sizing: border-box; justify-content: space-between; position: relative;
+        }
+        
+        /* HEADER */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .header-content { text-align: left; }
+        h1 { margin: 0; font-size: 1.4rem; letter-spacing: 1px; color: var(--primary); text-transform: uppercase;}
+        p.subtitle { margin: 2px 0 0; color: var(--text-sec); font-size: 0.75rem; }
+        .icon-btn {
+            background: rgba(255,255,255,0.1); border: none; width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;
+        }
+        .icon-btn svg { width: 20px; height: 20px; fill: var(--primary); }
+        .icon-btn:active { transform: scale(0.9); }
+        
+        /* GRID DE MÉTODOS (Agora com 4 colunas ou 2x2 dependendo do espaço, ajustei para 2x2 para caber bonito) */
+        .methods-grid { 
+            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; 
+        }
+        .method-card {
+            background: var(--surface); border: 2px solid transparent; border-radius: 12px; padding: 8px 4px;
+            cursor: pointer; transition: all 0.2s; text-align: center; opacity: 0.6; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .method-card.active {
+            border-color: var(--primary); background: #2a2a2a; opacity: 1; transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .method-icon { width: 28px; height: 28px; fill: var(--text-main); margin-bottom: 4px; }
+        .method-name { font-size: 0.6rem; font-weight: bold; text-transform: uppercase; }
+
+        /* INPUTS */
+        .input-section { background: var(--surface); border-radius: 20px; padding: 20px; text-align: center; margin-bottom: auto; }
+        .big-input-wrapper { display: flex; align-items: center; justify-content: center; margin: 5px 0; }
+        input[type="number"] {
+            background: transparent; border: none; color: var(--text-main); font-size: 2.5rem; width: 100px;
+            text-align: center; font-family: 'Montserrat', sans-serif; font-weight: 300; outline: none;
+        }
+        .unit { font-size: 1rem; color: var(--text-sec); margin-top: 8px; }
+        
+        .slider-container { margin: 15px 0 10px 0; padding: 0 5px; }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: var(--accent);
+            cursor: pointer; margin-top: -7px; box-shadow: 0 0 10px rgba(233, 196, 106, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #444; border-radius: 2px; }
+        .intensity-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-sec); margin-top: 5px; }
+
+        /* DETALHES */
+        .result-display { background: rgba(212, 163, 115, 0.1); padding: 15px; border-radius: 10px; margin-top: 15px; color: var(--primary); }
+        .main-result { font-size: 1.2rem; font-weight: 800; display: block; margin-bottom: 8px;}
+        .tech-details { display: flex; justify-content: space-around; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; font-size: 0.75rem; color: var(--text-sec); }
+        .tech-item { cursor: pointer; }
+        .tech-item span { display: block; color: var(--accent); font-weight: 600; font-size: 0.85rem; margin-top: 2px; }
+        
+        .grind-preview { width: 18px; height: 18px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 4px; border: 1px solid rgba(255,255,255,0.2); background-color: #3b2f2f; }
+        .texture-fine { background-image: radial-gradient(#d7ccc8 1px, transparent 1px); background-size: 3px 3px; }
+        .texture-moka { background-image: radial-gradient(#d7ccc8 1.2px, transparent 1.2px); background-size: 4px 4px; } /* Nova textura Moka */
+        .texture-medium { background-image: radial-gradient(#d7ccc8 1.5px, transparent 1.5px); background-size: 6px 6px; }
+        .texture-coarse { background-image: radial-gradient(#d7ccc8 2px, transparent 2px); background-size: 10px 10px; }
+
+        /* MODAIS */
+        .modal-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark);
+            z-index: 10; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-btn { background: none; border: none; color: var(--text-sec); font-size: 1.5rem; cursor: pointer; }
+        .guide-content { text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .big-texture-circle { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--primary); margin-bottom: 20px; background-color: #3e2723; }
+        .guide-ref { font-size: 1.5rem; color: var(--accent); font-weight: bold; margin-bottom: 10px; }
+        .guide-desc { color: var(--text-sec); max-width: 80%; line-height: 1.5; }
+        .history-list { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+        .history-item {
+            background: var(--surface); padding: 15px; border-radius: 10px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary);
+        }
+        .history-info h3 { margin: 0 0 5px 0; font-size: 0.9rem; color: var(--text-main); }
+        .history-info p { margin: 0; font-size: 0.8rem; color: var(--text-sec); }
+        .history-date { font-size: 0.7rem; color: var(--text-sec); opacity: 0.7; }
+        .share-btn-small { background: none; border: none; cursor: pointer; opacity: 0.7; padding: 5px;}
+        .share-btn-small svg { width: 18px; height: 18px; fill: var(--primary); }
+
+        /* TIMER & BOTÕES */
+        #timer-screen { text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+        .timer-container { position: relative; width: 240px; height: 240px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .progress-ring { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+        .progress-ring__circle { transition: stroke-dashoffset 0.35s; transform-origin: 50% 50%; }
+        #timer-display { font-size: 3.5rem; font-weight: 300; color: var(--text-main); z-index: 2; font-variant-numeric: tabular-nums;}
+        .instruction-box { font-size: 1.1rem; line-height: 1.4; min-height: 70px; padding: 0 20px;}
+        .hidden { display: none !important; }
+        
+        .btn-main {
+            background: var(--primary); color: #000; border: none; padding: 18px; border-radius: 50px;
+            font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; width: 100%;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(212, 163, 115, 0.4); margin-top: 15px;
+        }
+        .btn-stop { background: var(--danger); color: white; box-shadow: 0 4px 15px rgba(231, 111, 81, 0.4); }
+        .btn-save { background: var(--success); color: white; box-shadow: 0 4px 15px rgba(42, 157, 143, 0.4); display: none; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div id="setup-screen">
+            <header>
+                <div class="header-content">
+                    <h1>Barista Flow</h1>
+                    <p class="subtitle">Ultimate Edition</p>
+                </div>
+                <button class="icon-btn" onclick="toggleModal('history-screen')">
+                    <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                </button>
+            </header>
+
+            <div class="methods-grid">
+                <div class="method-card active" onclick="selectMethod('v60')" id="card-v60">
+                    <svg class="method-icon" viewBox="0 0 24 24"><path d="M4 4h16l-2 3h-2l-3 9h-2l-3-9H6L4 4z M12 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                    <div class="method-name">V60</div>
+                </div>
+                <div class="method-card" onclick="selectMethod('french')" id="card-french">
+                    <svg class="method-icon" viewBox="0 0 24 24"><path d="M6 3h12v2H6V3zm0 16h12v2H6v-2zm2-14h8v12H8V5zm4 2v3h-2V7h2z"/></svg>
+                    <div class="method-name">Prensa</div>
+                </div>
+                <div class="method-card" onclick="selectMethod('aeropress')" id="card-aeropress">
+                    <svg class="method-icon" viewBox="0 0 24 24"><path d="M7 2h10v3H7V2zm2 3h6v10H9V5zm-2 12h10v2H7v-2zm3 3h4v2h-4v-2z"/></svg>
+                    <div class="method-name">Aero</div>
+                </div>
+                <div class="method-card" onclick="selectMethod('moka')" id="card-moka">
+                    <svg class="method-icon" viewBox="0 0 24 24"><path d="M17 5v13h-3v-7h-4v7H7V5h10m3-2H4v17h16V3zm-3 19H7v2h10v-2z"/></svg>
+                    <div class="method-name">Moka</div>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <div class="label">Quantidade de Água</div>
+                <div class="big-input-wrapper">
+                    <input type="number" id="waterInput" value="300" inputmode="decimal" oninput="calculate()">
+                    <span class="unit">ml</span>
+                </div>
+
+                <div class="slider-container">
+                    <span id="strength-label" style="display:block; color:var(--primary); font-size:0.8rem; font-weight:bold; margin-bottom:5px;">Equilibrado</span>
+                    <input type="range" id="ratioSlider" min="8" max="20" step="1" value="15" oninput="calculate()">
+                    <div class="intensity-labels"><span>Forte</span><span>Suave</span></div>
+                </div>
+                
+                <div class="result-display" id="resultBox">
+                    <span class="main-result">Use <span id="coffeeOutput" style="color:white;">20</span>g de café</span>
+                    <div class="tech-details">
+                        <div class="tech-item" onclick="openGrindGuide()">
+                            Moagem ℹ️<br>
+                            <div style="display:flex; align-items:center; justify-content:center;">
+                                <div id="grind-icon" class="grind-preview texture-medium"></div>
+                                <span id="grindDisplay">Média</span>
+                            </div>
+                        </div>
+                        <div class="tech-item">Temp.<br><span id="tempDisplay">93°C</span></div>
+                        <div class="tech-item">Ratio<br><span id="ratioDisplay">1:15</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-main" onclick="startTimer()">Iniciar Extração</button>
+        </div>
+
+        <div id="guide-screen" class="modal-screen hidden">
+            <div class="modal-header"><h2>Guia de Moagem</h2><button class="close-btn" onclick="toggleModal('guide-screen')">×</button></div>
+            <div class="guide-content">
+                <div id="big-texture" class="big-texture-circle texture-medium"></div>
+                <div id="guide-ref" class="guide-ref">Referência</div>
+                <p id="guide-desc" class="guide-desc">Desc</p>
+            </div>
+            <button class="btn-main" onclick="toggleModal('guide-screen')">Entendi</button>
+        </div>
+
+        <div id="history-screen" class="modal-screen hidden">
+            <div class="modal-header"><h2>Seus Preparos</h2><button class="close-btn" onclick="toggleModal('history-screen')">×</button></div>
+            <div class="history-list" id="historyList"></div>
+        </div>
+
+        <div id="timer-screen" class="hidden">
+            <div style="text-transform: uppercase; letter-spacing: 2px; color: var(--text-sec); margin-bottom: 10px;" id="timer-method-name">V60</div>
+            <div class="timer-container">
+                <svg class="progress-ring" width="240" height="240">
+                    <circle stroke="#333" stroke-width="8" fill="transparent" r="110" cx="120" cy="120" />
+                    <circle id="progress-circle" class="progress-ring__circle" stroke="#D4A373" stroke-width="8" stroke-linecap="round" fill="transparent" r="110" cx="120" cy="120" />
+                </svg>
+                <span id="timer-display">00:00</span>
+            </div>
+            <div class="instruction-box" id="currentStep">Prepare-se...</div>
+            <button id="btn-save-diary" class="btn-main btn-save" onclick="saveAndClose()">SALVAR NO DIÁRIO</button>
+            <button id="btn-stop-timer" class="btn-main btn-stop" onclick="resetApp()">CANCELAR</button>
+        </div>
+    </div>
+
+    <script>
+        // --- AUDIO ---
+        let audioCtx;
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        function playBeep() {
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            if (navigator.vibrate) navigator.vibrate(200);
+        }
+
+        // --- WAKE LOCK ---
+        let wakeLock = null;
+        async function requestWakeLock() {
+            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+        }
+        function releaseWakeLock() {
+            if (wakeLock !== null) wakeLock.release().then(() => { wakeLock = null; });
+        }
+
+        // --- RECEITAS (INCLUINDO MOKA) ---
+        const recipes = {
+            v60: { 
+                name: "Hario V60", defaultRatio: 15, grind: "Média", temp: "93°C", totalTime: 180, 
+                texClass: "texture-medium", ref: "Areia de Praia", desc: "Fluxo constante.", 
+                steps: [{t:0,txt:"Escalde o filtro."},{t:5,txt:"BLOOM: Dobro de água."},{t:45,txt:"Despeje em círculos."},{t:150,txt:"Aguarde."},{t:180,txt:"Pronto!"}] 
+            },
+            french: { 
+                name: "Prensa Francesa", defaultRatio: 12, grind: "Grossa", temp: "95°C", totalTime: 240, 
+                texClass: "texture-coarse", ref: "Sal Grosso", desc: "Grãos visíveis.", 
+                steps: [{t:0,txt:"Add café e água."},{t:60,txt:"Quebre a crosta."},{t:230,txt:"Prepare p/ baixar."},{t:240,txt:"Baixe o êmbolo."}] 
+            },
+            aeropress: { 
+                name: "AeroPress", defaultRatio: 16, grind: "Fina-Média", temp: "85°C", totalTime: 90, 
+                texClass: "texture-fine", ref: "Sal Refinado", desc: "Extração rápida.", 
+                steps: [{t:0,txt:"Add água + café."},{t:10,txt:"Mexa forte."},{t:60,txt:"Vire e pressione."},{t:90,txt:"Pronto!"}] 
+            },
+            moka: {
+                name: "Moka (Italiana)", defaultRatio: 10, grind: "Fina (Moka)", temp: "Ferver", totalTime: 300,
+                texClass: "texture-moka", ref: "Açúcar Cristal Fino", desc: "Fino, mas não pó talco. Não compacte o café no filtro!",
+                steps: [
+                    {t:0,txt:"Encha a base com água quente até a válvula."},
+                    {t:30,txt:"Encha o filtro de café sem apertar. Rosqueie."},
+                    {t:60,txt:"Leve ao fogo médio com a tampa aberta."},
+                    {t:200,txt:"Começou a sair? Baixe o fogo!"},
+                    {t:280,txt:"Começou a borbulhar/gorgolejar? Tire do fogo e resfrie a base."}
+                ]
+            }
+        };
+
+        let currentMethod = 'v60'; let currentRatio = 15; let timerInterval; let lastStepIndex = -1;
+        
+        // --- UI ---
+        const circle = document.getElementById('progress-circle');
+        const radius = circle.r.baseVal.value;
+        const circumference = radius * 2 * Math.PI;
+        circle.style.strokeDasharray = `${circumference} ${circumference}`;
+        circle.style.strokeDashoffset = circumference;
+        function setProgress(percent) {
+            const offset = circumference - (percent / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function selectMethod(method) {
+            currentMethod = method;
+            document.querySelectorAll('.method-card').forEach(el => el.classList.remove('active'));
+            document.getElementById(`card-${method}`).classList.add('active');
+            document.getElementById('ratioSlider').value = recipes[method].defaultRatio;
+            calculate();
+        }
+
+        function calculate() {
+            let water = document.getElementById('waterInput').value; if(water === "") water = 0;
+            currentRatio = document.getElementById('ratioSlider').value;
+            const r = recipes[currentMethod];
+            let label = "Equilibrado";
+            if(currentRatio < 14) label = "Forte"; if(currentRatio < 10) label = "Muito Forte";
+            if(currentRatio > 16) label = "Suave"; if(currentRatio > 18) label = "Muito Suave";
+            document.getElementById('strength-label').innerText = label;
+            document.getElementById('coffeeOutput').innerText = (water / currentRatio).toFixed(1);
+            document.getElementById('grindDisplay').innerText = r.grind;
+            document.getElementById('tempDisplay').innerText = r.temp;
+            document.getElementById('ratioDisplay').innerText = `1:${currentRatio}`;
+            document.getElementById('grind-icon').className = `grind-preview ${r.texClass}`;
+        }
+
+        function openGrindGuide() {
+            const r = recipes[currentMethod];
+            document.getElementById('big-texture').className = `big-texture-circle ${r.texClass}`;
+            document.getElementById('guide-ref').innerText = r.ref;
+            document.getElementById('guide-desc').innerText = r.desc;
+            toggleModal('guide-screen');
+        }
+
+        function toggleModal(modalId) {
+            const screen = document.getElementById(modalId);
+            if(modalId === 'history-screen' && screen.classList.contains('hidden')) renderHistory();
+            screen.classList.toggle('hidden');
+        }
+
+        // --- TIMER ---
+        function startTimer() {
+            initAudio(); requestWakeLock();
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('timer-screen').classList.remove('hidden');
+            document.getElementById('timer-method-name').innerText = recipes[currentMethod].name;
+            document.getElementById('btn-save-diary').style.display = 'none';
+            document.getElementById('btn-stop-timer').innerText = 'CANCELAR';
+            document.getElementById('btn-stop-timer').classList.remove('hidden');
+            playBeep();
+            runTimer();
+        }
+
+        function runTimer() {
+            let startTime = Date.now();
+            const totalDuration = recipes[currentMethod].totalTime; 
+            const steps = recipes[currentMethod].steps;
+            lastStepIndex = -1;
+
+            timerInterval = setInterval(() => {
+                let elapsed = Math.floor((Date.now() - startTime) / 1000);
+                let m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                let s = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer-display').innerText = `${m}:${s}`;
+                let percentage = (elapsed / totalDuration) * 100;
+                if(percentage > 100) percentage = 100;
+                setProgress(percentage);
+
+                if (elapsed >= totalDuration) {
+                    finishTimer();
+                } else {
+                    let currentIdx = 0;
+                    for (let i = 0; i < steps.length; i++) { if (elapsed >= steps[i].t) currentIdx = i; }
+                    if (currentIdx !== lastStepIndex) {
+                        lastStepIndex = currentIdx;
+                        document.getElementById('currentStep').innerText = steps[currentIdx].txt;
+                        if (elapsed > 0) playBeep();
+                    }
+                }
+            }, 100);
+        }
+
+        function finishTimer() {
+            clearInterval(timerInterval); releaseWakeLock();
+            document.getElementById('currentStep').innerText = "Café Pronto! Aproveite.";
+            document.getElementById('currentStep').style.color = "#E9C46A";
+            playBeep();
+            document.getElementById('btn-save-diary').style.display = 'block';
+            document.getElementById('btn-stop-timer').innerText = 'Voltar sem Salvar';
+        }
+
+        function resetApp() {
+            clearInterval(timerInterval); releaseWakeLock();
+            document.getElementById('timer-display').innerText = "00:00";
+            setProgress(0);
+            document.getElementById('setup-screen').classList.remove('hidden');
+            document.getElementById('timer-screen').classList.add('hidden');
+            document.getElementById('currentStep').style.color = "white";
+        }
+        
+        function saveAndClose() {
+            const entry = {
+                methodName: recipes[currentMethod].name,
+                water: document.getElementById('waterInput').value,
+                coffee: document.getElementById('coffeeOutput').innerText,
+                ratio: currentRatio,
+                date: new Date().toLocaleDateString('pt-BR'),
+                time: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})
+            };
+            let history = JSON.parse(localStorage.getItem('baristaHistory') || '[]');
+            history.unshift(entry);
+            localStorage.setItem('baristaHistory', JSON.stringify(history));
+            resetApp();
+            setTimeout(() => toggleModal('history-screen'), 300);
+        }
+
+        async function shareItem(index) {
+            let history = JSON.parse(localStorage.getItem('baristaHistory') || '[]');
+            let item = history[index];
+            const text = `☕ Café do dia: ${item.methodName}. Usei ${item.coffee}g de café para ${item.water}ml de água (Ratio 1:${item.ratio}). Ficou top! #BaristaFlow`;
+            if (navigator.share) { try { await navigator.share({ title: 'Barista Flow', text: text }); } catch (err) {} } 
+            else { navigator.clipboard.writeText(text); alert("Texto copiado!"); }
+        }
+
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem('baristaHistory') || '[]');
+            const listEl = document.getElementById('historyList');
+            listEl.innerHTML = '';
+            if (history.length === 0) { listEl.innerHTML = '<p style="text-align:center; color:#666; margin-top:50px;">Nenhum preparo salvo.</p>'; return; }
+            history.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <div class="history-info"><h3>${item.methodName}</h3><p>${item.water}ml / ${item.coffee}g (1:${item.ratio})</p></div>
+                    <div style="text-align:right">
+                        <div class="history-date">${item.date}</div>
+                        <button class="share-btn-small" onclick="shareItem(${index})"><svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg></button>
+                    </div>`;
+                listEl.appendChild(div);
+            });
+        }
+        calculate();
+    </script>
+</body>
+</html>
